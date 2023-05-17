@@ -8,6 +8,7 @@
 #define BOARD_HPP
 
 #include <iostream>
+#include <vector>
 #include "Tile.hpp"
 
 class Board {
@@ -22,7 +23,6 @@ class Board {
         void printLine();
 
         bool inBoard(int x, int y);
-        bool cEq(int x, int y);
         void placeBombs();
         void placeNumbers();
         void boardIncAdj(int x, int y);
@@ -30,7 +30,7 @@ class Board {
     public:
         Board(int x, int y, int numOfBombs);
         ~Board();
-        Tile **m_board;
+        std::vector<std::vector<Tile>> m_board;
 
         void info();
         void printBoard(bool reveal = false);

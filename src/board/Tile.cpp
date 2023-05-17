@@ -9,7 +9,7 @@
 /**
  * @brief Tile constructor
 */
-Tile::Tile() : m_isBomb(false), m_state(0), m_value(0) {
+Tile::Tile() : m_state(0), m_value(0) {
     // Nothing right now
 }
 
@@ -18,13 +18,6 @@ Tile::Tile() : m_isBomb(false), m_state(0), m_value(0) {
 */
 Tile::~Tile() {
     // Nothing rn
-}
-
-/**
- * @brief Set the tile as a bomb
-*/
-void Tile::setBomb(bool bomb) {
-    m_isBomb = bomb;
 }
 
 
@@ -42,14 +35,6 @@ void Tile::setState(int state) {
 */
 void Tile::setValue(int value) {
     m_value = value;
-}
-
-/**
- * @brief Get if the tile is a bomb
- * @return bool
-*/
-bool Tile::getIsBomb() {
-    return m_isBomb;
 }
 
 

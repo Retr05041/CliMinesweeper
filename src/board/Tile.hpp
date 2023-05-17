@@ -11,21 +11,18 @@
 
 class Tile {
     private:
-        // How many bombs are adjacent to this tile
+        // -1 = bomb, 0 = empty, 1-8 = number of bombs adjacent
         int m_value;
 
         // 0 = hidden, 1 = revealed, 2 = flagged, 3 = question mark
         int m_state;
 
-        bool m_isBomb;
     public:
         Tile();
         ~Tile();
 
-        void setBomb(bool bomb);
         void setValue(int value);
         void setState(int state);
-        bool getIsBomb();
         int getValue();
         int getState();
 };

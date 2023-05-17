@@ -5,6 +5,7 @@
 */
 
 #include <iostream>
+#include <memory>
 #include "board/Board.hpp"
 
 void info() {
@@ -20,12 +21,12 @@ void help() {
 }
 
 int main(int argc, char const *argv[]) {
-    Board *currentBoard;
+    std::unique_ptr<Board> currentBoard(nullptr);
 
     if (argc == 1) {
-        currentBoard = new Board(10, 10, 10);
+        currentBoard = std::make_unique<Board> (10, 10, 10);
     } else if (argc == 4) {
-        currentBoard = new Board(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]));
+        currentBoard = std::make_unique<Board> (atoi(argv[1]), atoi(argv[2]), atoi(argv[3]));
     } else {
         info();
         return 1;
@@ -34,68 +35,76 @@ int main(int argc, char const *argv[]) {
     currentBoard->info();
     currentBoard->printBoard();
 
-    std::string input;
+    char input;
+    int x, y;
 
     do {
+
         std::cout << "Enter an action (h for help): ";
         std::cin >> input;
 
-        // Help
-        if (input == "h") {
+        switch (input) {
+        case 'h': // Help command
             help();
-        // Reveal
-        } else if (input == "r") {
-            int x, y;
+            break;
+        
+        case 'r': // Reveal tile at (x,y)
             std::cin >> x >> y;
             currentBoard->floodAt(x, y);
-            if (currentBoard->gameOver() != false && currentBoard->bombsLeft() == 0) {
-                std::cout << "You win!" << std::endl;
-                break;
-            }
+            currentBoard->printBoard();
             if (currentBoard->gameOver() == true) {
                 std::cout << "you lost." << std::endl;
                 break;
             }
-            currentBoard->printBoard();
-        // Flag
-        } else if (input == "f") {
-            int x, y;
+            break;
+        
+        case 'f': // Flag tile at (x,y)
             std::cin >> x >> y;
             if (currentBoard->m_board[x][y].getState() != 1) currentBoard->flagAt(x, y);
             currentBoard->printBoard();
-        // Question mark
-        } else if (input == "q") {
-            int x, y;
+            if (currentBoard->gameOver() != false && currentBoard->bombsLeft() == 0) {
+                std::cout << "You win!" << std::endl;
+                break;
+            }
+            break;
+
+        case 'q': // Question mark tile at (x,y)
             std::cin >> x >> y;
             if (currentBoard->m_board[x][y].getState() != 1) currentBoard->questionAt(x, y);
             currentBoard->printBoard();
-        // Unmark
-        } else if (input == "u") {
-            int x, y;
+            break;
+
+        case 'u': // Unmark tile at (x,y)
             std::cin >> x >> y;
             currentBoard->unmarkAt(x, y);
             currentBoard->printBoard();
-        // Info
-        } else if (input == "i") {
+            break;
+
+        case 'i': // Info
             currentBoard->info();
-        } else if (input == "p") {
+            break;
+
+        case 'p': // Print board - it will reveal the answers depending on the input
             int reveal;
             std::cin >> reveal;
             if (reveal == 0) currentBoard->printBoard();
             else if (reveal == 1) currentBoard->printBoard(true);
-        // Bombs left
-        } else if (input == "b") {
+            break;
+
+        case 'b': // Bombs left
             std::cout << "Bombs left: " << currentBoard->bombsLeft() << std::endl;
-        // Quit game
-        } else if (input == "quit") {
-            std::cout << "Quitting..." << std::endl;
-        } else {
+            break;
+
+        case 'e':
+                std::cout << "Quitting..." << std::endl;
+                return 0;
+        
+        default:
             std::cout << "Invalid action!" << std::endl;
+            break;
         }
 
-    } while (input != "quit");
+    } while (currentBoard->gameOver() == false);
 
-
-    delete currentBoard;
     return 0;
 }

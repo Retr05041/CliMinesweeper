@@ -30,16 +30,13 @@ Board::Board(int x, int y, int numOfBombs) : m_X(x), m_Y(y), m_numOfBombs(numOfB
         exit(1);
     }
 
-    // Setup board (array of tile pointers)
-    m_board = new Tile*[m_X];
-    for (int i = 0; i < m_X; i++) {
-        m_board[i] = new Tile[m_Y];
-
-        for (int j = 0; j < m_Y; j++) {
-            m_board[i][j] = Tile();
+    // Setup board Vector of Vectors of type Tile
+    for (int i = 0; i < m_Y; i++) {
+        m_board.push_back(std::vector<Tile>());
+        for (int j = 0; j < m_X; j++) {
+            m_board[i].push_back(Tile());
         }
     }
-
 
     // Place bombs
     placeBombs();
@@ -52,11 +49,7 @@ Board::Board(int x, int y, int numOfBombs) : m_X(x), m_Y(y), m_numOfBombs(numOfB
  * @brief Board destructor
 */
 Board::~Board() {
-    // Delete everything in board
-    for (int i = 0; i < m_X; i++) {
-        delete[] m_board[i];
-    }
-    delete[] m_board;
+    // Nothing right now
 }
 
 /**
@@ -95,13 +88,6 @@ bool Board::inBoard(int x, int y) {
 }
 
 /**
- * @brief Check if the offset is valid
-*/
-bool Board::cEq(int x, int y) {
-    return (x == m_X && y == m_Y);
-}
-
-/**
  * @brief Place bombs
 */
 void Board::placeBombs() {
@@ -111,8 +97,7 @@ void Board::placeBombs() {
         do {
             x = rand() % m_X;
             y = rand() % m_Y;
-        } while (m_board[x][y].getIsBomb());
-        m_board[x][y].setBomb(true);
+        } while (m_board[x][y].getValue() == -1);
         m_board[x][y].setValue(-1);
     }
 }
@@ -125,7 +110,7 @@ void Board::boardIncAdj(int x, int y) {
         for (int xCheck = -1; xCheck <= 1; xCheck++) {
             int newX = x + xCheck;
             int newY = y + yCheck;
-            if (!inBoard(newX, newY) || m_board[newX][newY].getIsBomb()) continue;
+            if (!inBoard(newX, newY) || m_board[newX][newY].getValue() == -1) continue;
             m_board[newX][newY].setValue(m_board[newX][newY].getValue() + 1);
         }
     }
@@ -138,9 +123,7 @@ void Board::boardIncAdj(int x, int y) {
 void Board::placeNumbers() {
     for (int y = 0; y < m_Y; y++) {
         for (int x = 0; x < m_X; x++) {
-            if (m_board[x][y].getIsBomb()) {
-                boardIncAdj(x, y);
-            }
+            if (m_board[x][y].getValue() == -1) boardIncAdj(x, y);
         }
     }
 }
@@ -150,11 +133,9 @@ void Board::placeNumbers() {
 */
 int Board::boardTilesLeft() {
     int tiles = 0;
-    for (int x = 0; x < m_X; x++) {
-        for (int y = 0; y < m_Y; y++) {
-            if (m_board[x][y].getState() == 0) {
-                tiles++;
-            }
+    for (int y = 0; y < m_Y; y++) {
+        for (int x = 0; x < m_X; x++) {
+            if (m_board[x][y].getState() == 0) tiles++;
         }
     }
     return tiles;
@@ -165,9 +146,9 @@ int Board::boardTilesLeft() {
 */
 void Board::info() {
     std::cout << "Board info" << std::endl;
-    std::cout << "X: " << m_X << std::endl;
-    std::cout << "Y: " << m_Y << std::endl;
-    std::cout << "Number of bombs: " << m_numOfBombs << std::endl;
+    std::cout << "\tX: " << m_X << std::endl;
+    std::cout << "\tY: " << m_Y << std::endl;
+    std::cout << "\tNumber of bombs: " << m_numOfBombs << std::endl;
     std::cout << std::endl;
 }
 
@@ -178,17 +159,16 @@ void Board::printBoard(bool reveal) {
     printX();
     printLine();
     for (int y = 0; y < m_Y; y++) {
-        if (y < 10) {
-            std::cout << y << "  |";
-        } else if (y > 9 && y < 100) {
-            std::cout << y << " |";
-        }
+        // Spacing
+        if (y < 10) std::cout << y << "  |";
+        else if (y > 9 && y < 100) std::cout << y << " |";
+
         for (int x = 0; x < m_X; x++) {
             switch (m_board[x][y].getState()) {
                 // hidden
                 case 0:
                     if (reveal) {
-                        if (m_board[x][y].getIsBomb()) {
+                        if (m_board[x][y].getValue() == -1) {
                             std::cout << "[B]|";
                         } else {
                             if (m_board[x][y].getValue() == 0) {
@@ -204,7 +184,7 @@ void Board::printBoard(bool reveal) {
                 
                 // revealed
                 case 1:
-                    if (m_board[x][y].getIsBomb()) {
+                    if (m_board[x][y].getValue() == -1) {
                         std::cout << "}#{|";
                     } else {
                         if (m_board[x][y].getValue() == 0) {
@@ -252,11 +232,8 @@ void Board::floodAt(int x, int y) {
             int newX = x+xCheck;
             int newY = y+yCheck;
             if ((yCheck == 0 && xCheck == 0) || !inBoard(newX, newY)) continue;
-            if (m_board[newX][newY].getValue() == 0 && m_board[newX][newY].getState() == 0) {
-                floodAt(newX, newY);
-            } else if (m_board[newX][newY].getValue() > 0 && m_board[newX][newY].getState() == 0) {
-                m_board[newX][newY].setState(1);
-            }
+            if (m_board[newX][newY].getValue() == 0 && m_board[newX][newY].getState() == 0) floodAt(newX, newY);
+            else if (m_board[newX][newY].getValue() > 0 && m_board[newX][newY].getState() == 0) m_board[newX][newY].setState(1);
         }
     }
 }
@@ -265,33 +242,25 @@ void Board::floodAt(int x, int y) {
  * @brief Flag at a certain point
 */
 void Board::flagAt(int x, int y) {
-    if (m_board[x][y].getState() == 0) {
-        m_board[x][y].setState(2);
-    } else {
-        std::cout << "Tile at (" << x << ", " << y << ") is already revealed!" << std::endl;
-    }
+    if (m_board[x][y].getState() == 0) m_board[x][y].setState(2);
+    else std::cout << "Tile at (" << x << ", " << y << ") is already revealed!" << std::endl;
+    if (bombsLeft() == 0) m_gameOver = true;
 }
 
 /**
  * @brief Question mark at a certain point
 */
 void Board::questionAt(int x, int y) {
-    if (m_board[x][y].getState() == 0) {
-        m_board[x][y].setState(3);
-    } else {
-        std::cout << "Tile at (" << x << ", " << y << ") is already revealed!" << std::endl;
-    }
+    if (m_board[x][y].getState() == 0) m_board[x][y].setState(3);
+    else std::cout << "Tile at (" << x << ", " << y << ") is already revealed!" << std::endl;
 }
 
 /**
  * @brief Unmark at a certain point
 */
 void Board::unmarkAt(int x, int y) {
-    if (m_board[x][y].getState() == 2 || m_board[x][y].getState() == 3) {
-        m_board[x][y].setState(0);
-    } else {
-        std::cout << "Tile at (" << x << ", " << y << ") is already revealed!" << std::endl;
-    }
+    if (m_board[x][y].getState() == 2 || m_board[x][y].getState() == 3) m_board[x][y].setState(0);
+    else std::cout << "Tile at (" << x << ", " << y << ") is already revealed!" << std::endl;
 }
 
 /**
@@ -301,9 +270,7 @@ int Board::bombsLeft() {
     int bombs = 0;
     for (int y = 0; y < m_Y; y++) {
         for (int x = 0; x < m_X; x++) {
-            if (m_board[x][y].getIsBomb() && m_board[x][y].getState() != 2) {
-                bombs++;
-            }
+            if (m_board[x][y].getValue() == -1 && m_board[x][y].getState() != 2) bombs++;
         }
     }
     return bombs;
