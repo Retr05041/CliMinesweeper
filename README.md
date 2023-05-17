@@ -12,6 +12,7 @@ cmake ..
 make
 ./Minesweeper
 ```
+Optional, you can run `./MineSweeper <rows> <cols> <bombs>` to specify the size of the board and the number of bombs. Default is 10x10 with 10 bombs.
 
 ### How to play
 ```
