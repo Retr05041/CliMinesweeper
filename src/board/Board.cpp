@@ -247,8 +247,6 @@ void Board::floodAt(int x, int y) {
         return;
     }
 
-    // if (m_board[x][y].getState() != 0) return;
-
     for (int yCheck = -1; yCheck <= 1; yCheck++) {
         for (int xCheck = -1; xCheck <= 1; xCheck++) {
             int newX = x+xCheck;
