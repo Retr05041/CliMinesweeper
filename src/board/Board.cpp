@@ -10,6 +10,10 @@
  * @brief Board constructor
 */
 Board::Board(int x, int y, int numOfBombs) : m_X(x), m_Y(y), m_numOfBombs(numOfBombs) {
+    // Seed random
+    srand(time(0));
+
+    // Check for errors
     if (m_X < 4 || m_Y < 4) {
         std::cout << "Board too small!" << std::endl;
         exit(1);
