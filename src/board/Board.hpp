@@ -9,7 +9,7 @@
 
 #include <iostream>
 #include <vector>
-#include "Tile.hpp"
+#include "../tile/Tile.hpp"
 
 class Board {
     private:

@@ -17,7 +17,7 @@ add_definitions(-std=c++17)
 set(SOURCE_FILES
     src/main.cpp
     src/board/Board.cpp
-    src/board/Tile.cpp
+    src/tile/Tile.cpp
 )
 
 # Add executable
